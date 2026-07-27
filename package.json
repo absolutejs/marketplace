@@ -1,6 +1,6 @@
 {
   "name": "@absolutejs/marketplace",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Provider-agnostic marketplace primitives for listings, criteria orders, auctions, trades, and atomic collectible settlement.",
   "type": "module",
   "license": "BSL-1.1",
@@ -39,7 +39,7 @@
     "check:package": "bun run typecheck && bun run test && bun run build"
   },
   "dependencies": {
-    "@absolutejs/manifest": "^0.6.3",
+    "@absolutejs/manifest": "^0.8.0",
     "@sinclair/typebox": "^0.34.0"
   },
   "peerDependencies": {
