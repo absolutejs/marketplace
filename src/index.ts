@@ -168,14 +168,25 @@ export type SaleSettlementPlan = {
   entries: { accountId: string; amountCents: Cents }[];
 };
 
+/* One entry per account. @absolutejs/wallet 0.10 refuses a transaction that
+ * posts twice to one account, and a sale can: the platform selling its own
+ * listing is both seller and fee account, and the platform buying one is
+ * both buyer and fee account. */
+const combinePerAccount = (entries: { accountId: string; amountCents: Cents }[]) => {
+  const totals = new Map<string, Cents>();
+  for (const entry of entries) totals.set(entry.accountId, (totals.get(entry.accountId) ?? 0) + entry.amountCents);
+
+  return [...totals].map(([accountId, amountCents]) => ({ accountId, amountCents }));
+};
+
 export const planSaleSettlement = (input: Omit<SaleSettlementPlan, "sellerNetCents" | "feeCents" | "entries">, policy = steamLikeMarketplacePolicy): SaleSettlementPlan => {
   const idempotencyKey = assertIdempotencyKey(input.idempotencyKey);
   const grossCents = assertMarketAmount(input.grossCents, "sale price", policy);
   if (input.sellerAccountId === input.buyerAccountId) throw new Error("buyer and seller must be different accounts");
   const fee = sellerFee(grossCents, policy.wallet.sellerFeeBps);
-  return { idempotencyKey, assetId: input.assetId, sellerAccountId: input.sellerAccountId, buyerAccountId: input.buyerAccountId, platformAccountId: input.platformAccountId, grossCents, feeCents: fee.feeCents, sellerNetCents: fee.sellerNetCents, entries: [
+  return { idempotencyKey, assetId: input.assetId, sellerAccountId: input.sellerAccountId, buyerAccountId: input.buyerAccountId, platformAccountId: input.platformAccountId, grossCents, feeCents: fee.feeCents, sellerNetCents: fee.sellerNetCents, entries: combinePerAccount([
     { accountId: input.buyerAccountId, amountCents: -grossCents },
     { accountId: input.sellerAccountId, amountCents: fee.sellerNetCents },
     { accountId: input.platformAccountId, amountCents: fee.feeCents },
-  ] };
+  ]) };
 };

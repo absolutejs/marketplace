@@ -23,6 +23,18 @@ describe("marketplace primitives", () => {
     expect(plan.feeCents).toBe(100);
     expect(plan.entries.reduce((sum, row) => sum + row.amountCents, 0)).toBe(0);
   });
+  test("posts once per account when the platform is also the seller or the buyer", () => {
+    const platformSells = planSaleSettlement({ idempotencyKey: "sale:2", assetId: "pet:2", sellerAccountId: "platform", buyerAccountId: "buyer", platformAccountId: "platform", grossCents: 10_00 });
+    expect(platformSells.entries).toEqual([
+      { accountId: "buyer", amountCents: -1000 },
+      { accountId: "platform", amountCents: 1000 },
+    ]);
+    const platformBuys = planSaleSettlement({ idempotencyKey: "sale:3", assetId: "pet:3", sellerAccountId: "seller", buyerAccountId: "platform", platformAccountId: "platform", grossCents: 10_00 });
+    expect(platformBuys.entries).toEqual([
+      { accountId: "platform", amountCents: -900 },
+      { accountId: "seller", amountCents: 900 },
+    ]);
+  });
   test("enforces state transitions", () => {
     expect(assertMarketTransition("active", "settling")).toBe("settling");
     expect(() => assertMarketTransition("settled", "active")).toThrow();
