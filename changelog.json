@@ -1,5 +1,20 @@
 {
 	"contract": 1,
 	"name": "@absolutejs/marketplace",
-	"releases": []
+	"releases": [
+		{
+			"changes": [
+				{
+					"detail": "The wallet peer range stopped below 0.10, so an app on @absolutejs/wallet 0.10 installed a second copy for this package. It now accepts 0.9.1 through 0.10.x. wallet 0.10 refuses a transaction that posts twice to one account, and a sale could: the platform selling its own listing is both seller and fee account, and the platform buying one is both buyer and fee account. planSaleSettlement now combines entries per account, so such a sale posts once to the platform with the net amount.",
+					"kind": "fixed",
+					"summary": "Accepts @absolutejs/wallet 0.10 and posts once per account in a sale",
+					"symbols": [
+						"planSaleSettlement"
+					]
+				}
+			],
+			"date": "2026-11-02",
+			"version": "0.1.8"
+		}
+	]
 }
